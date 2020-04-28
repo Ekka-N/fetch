@@ -1,16 +1,3 @@
-// Получи ссылку на его аватарку, имя, описание профиля и ссылку на его страницу.
-
-const url = window.location.toString();
-const username = getusername(url);
-console.log(url);
-
-window.onload = () => {
-    setTimeout( () => {
-    let preloader = document.getElementById('preloader');
-    preloader.classList.add('hidden');
-}, 1000);
-};
-
 function getusername(url) {
     let username = url.split('=')[1];
     if (username === undefined) {
@@ -19,24 +6,45 @@ function getusername(url) {
     return username;
 }
 
-fetch(`https://api.github.com/users/${username}`)
-    .then(res => res.json())
+const url = window.location.toString();
+const username = getusername(url);
+
+const getDate = new Promise((resolve, reject) => {
+    let date = new Date();
+    if (date) {
+        setTimeout(() => {
+            resolve(date); 
+        }, 2000)
+    } else {
+        reject('Нет данных о времени')
+    }
+})
+
+const getRequest = fetch(`https://api.github.com/users/${username}`);
+
+Promise.all([getDate, getRequest])
+    .then(([date, request])=> {
+        let divDate = document.getElementById('date');
+        divDate.innerHTML = ` ${date}`;
+        let res = request.json();
+        return res;
+    })
     .then(json => {
         console.log(json);
         if (json.login) {
-                let name;
-                if (json.name == null) {
-                    name = json.login;
-                } else {
-                    name = json.name;
-                }
-                const nameTag = document.createElement('h1');
-                nameTag.classList.add('username');
-                let link = document.createElement('a');
-                link.href = `https://github.com/${username}`;
-                link.innerHTML = `${name}`;
-                document.body.appendChild(nameTag);
-                nameTag.appendChild(link);
+            let name;
+            if (json.name == null) {
+                name = json.login;
+            } else {
+            name = json.name;
+            }
+            const nameTag = document.createElement('h1');
+            nameTag.classList.add('username');
+            let link = document.createElement('a');
+            link.href = `https://github.com/${username}`;
+            link.innerHTML = `${name}`;
+            document.body.appendChild(nameTag);
+            nameTag.appendChild(link);
 
             const desc = document.createElement('p');  
             desc.classList.add('description');
@@ -58,5 +66,10 @@ fetch(`https://api.github.com/users/${username}`)
         }
 
     })
-    .catch(() => document.body.innerHTML = '<h1>Информация о пользователе не доступна</h1>');
+    .then(() => {
+        let preloader = document.getElementById('preloader');
+        preloader.classList.add('hidden');
+    }
+    )
+    .catch(() => document.body.innerHTML = '<h1>Ошибка</h1>');
 

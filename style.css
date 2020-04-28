@@ -47,3 +47,13 @@
     content:'Описание профиля: ';
     font-weight: bold;
 }
+#date {
+  position: absolute;
+  left: 10px;
+  bottom: 30px;
+  max-width: 460px;
+}
+#date:before {
+  content: 'Дата и время запроса: ';
+  font-weight: bold;
+}
